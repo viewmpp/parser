@@ -1,4 +1,7 @@
 package dev.mppviewer.parser.model.dto;
 
-public class ExceptionDTO {
+
+public record ExceptionDTO(
+        String message
+) {
 }
