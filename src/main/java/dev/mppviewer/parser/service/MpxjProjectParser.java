@@ -1,6 +1,7 @@
 package dev.mppviewer.parser.service;
 
 import dev.mppviewer.parser.exception.InvalidProjectFileException;
+import dev.mppviewer.parser.exception.ParseError;
 import dev.mppviewer.parser.model.Contract;
 import dev.mppviewer.parser.model.dto.AssignmentDTO;
 import dev.mppviewer.parser.model.dto.BaselineDTO;
@@ -58,10 +59,10 @@ public class MpxjProjectParser implements ProjectParser {
         try {
             project = new UniversalProjectReader().read(new ByteArrayInputStream(source));
         } catch (MPXJException | RuntimeException e) {
-            throw new InvalidProjectFileException("file could not be parsed: " + e.getMessage(), e);
+            throw new InvalidProjectFileException(ParseError.CORRUPT_FILE, e.getMessage(), e);
         }
         if (project == null) {
-            throw new InvalidProjectFileException("unrecognised file format", null);
+            throw new InvalidProjectFileException(ParseError.UNSUPPORTED_FORMAT, "reader returned null", null);
         }
         return project;
     }

@@ -3,7 +3,14 @@ package dev.mppviewer.parser.exception;
 
 public class InvalidProjectFileException extends RuntimeException {
 
-    public InvalidProjectFileException(String message, Throwable cause) {
-        super(message, cause);
+    private final ParseError error;
+
+    public InvalidProjectFileException(ParseError error, String detail, Throwable cause) {
+        super(detail, cause);
+        this.error = error;
+    }
+
+    public ParseError error() {
+        return error;
     }
 }

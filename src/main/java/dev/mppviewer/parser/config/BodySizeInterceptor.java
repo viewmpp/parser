@@ -18,6 +18,12 @@ public class BodySizeInterceptor implements HandlerInterceptor {
         this.maxBytes = maxBytes;
     }
 
+    /**
+     * При chunked-кодировании Content-Length отсутствует и getContentLengthLong()
+     * вернёт -1 — проверка молча пропустит запрос любого размера. Это приемлемо:
+     * настоящий барьер стоит в Go, а сайдкар в интернет не смотрит. Здесь ловится
+     * честная ошибка, а не атака.
+     */
     @Override
     public boolean preHandle(HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) {
         long declared = request.getContentLengthLong();

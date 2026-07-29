@@ -19,20 +19,20 @@ public class ParserExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler({InvalidProjectFileException.class})
     public ResponseEntity<ExceptionDTO> handleInvalidProjectFile(InvalidProjectFileException ex) {
-        log.info("file rejected: {}", ex.getMessage());
-        return build(ex.getMessage(), HttpStatus.BAD_REQUEST);
+        log.info("file rejected [{}]: {}", ex.error().code(), ex.getMessage());
+        return build(ex.error(), HttpStatus.BAD_REQUEST);
     }
 
     @ExceptionHandler({BodyTooLargeException.class})
     public ResponseEntity<ExceptionDTO> handleBodyTooLarge(BodyTooLargeException ex) {
         log.info("body rejected: {}", ex.getMessage());
-        return build(ex.getMessage(), HttpStatus.CONTENT_TOO_LARGE);
+        return build(ParseError.BODY_TOO_LARGE, HttpStatus.CONTENT_TOO_LARGE);
     }
 
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ExceptionDTO> handleException(Exception ex) {
         log.error("unhandled exception", ex);
-        return build("internal error", HttpStatus.INTERNAL_SERVER_ERROR);
+        return build(ParseError.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @Override
@@ -41,11 +41,12 @@ public class ParserExceptionHandler extends ResponseEntityExceptionHandler {
                                                              @NonNull HttpHeaders headers,
                                                              HttpStatusCode status,
                                                              @NonNull WebRequest request) {
-        log.warn("request rejected: status={}, message={}", status.value(), ex.getMessage());
-        return new ResponseEntity<>(new ExceptionDTO(String.valueOf(ex.getMessage())), headers, status);
+        log.warn("request rejected: status={}, detail={}", status.value(), ex.getMessage());
+        ParseError error = status.is5xxServerError() ? ParseError.INTERNAL : ParseError.BAD_REQUEST;
+        return new ResponseEntity<>(new ExceptionDTO(error.code(), error.message()), headers, status);
     }
 
-    private ResponseEntity<ExceptionDTO> build(String message, HttpStatus status) {
-        return new ResponseEntity<>(new ExceptionDTO(String.valueOf(message)), status);
+    private ResponseEntity<ExceptionDTO> build(ParseError error, HttpStatus status) {
+        return new ResponseEntity<>(new ExceptionDTO(error.code(), error.message()), status);
     }
 }

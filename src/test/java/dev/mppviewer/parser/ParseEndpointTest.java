@@ -56,10 +56,28 @@ class ParseEndpointTest {
     }
 
     @Test
-    void rejectsGarbage() throws Exception {
-        mockMvc().perform(post("/parse")
+    void rejectsGarbageWithMachineCode() throws Exception {
+        String body = mockMvc().perform(post("/parse")
                         .contentType(MediaType.APPLICATION_OCTET_STREAM)
                         .content("this is not a project file".getBytes(StandardCharsets.UTF_8)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(body).contains("\"code\":\"unsupported_format\"");
+    }
+
+    @Test
+    void neverLeaksLibraryInternals() throws Exception {
+        byte[] truncated = new byte[4096];
+        System.arraycopy(Files.readAllBytes(Path.of("testdata", "real/mpp14baseline.mpp")),
+                0, truncated, 0, truncated.length);
+
+        String body = mockMvc().perform(post("/parse")
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .content(truncated))
+                .andExpect(status().isBadRequest())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+
+        assertThat(body).doesNotContain("org.mpxj").doesNotContain("org.apache.poi").doesNotContain("java.");
     }
 }
