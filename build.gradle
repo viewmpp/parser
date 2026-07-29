@@ -19,6 +19,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'net.sf.mpxj:mpxj:16.5.0'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
