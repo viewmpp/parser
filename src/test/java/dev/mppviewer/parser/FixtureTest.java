@@ -1,6 +1,7 @@
 package dev.mppviewer.parser;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -25,25 +26,27 @@ class FixtureTest {
     @Autowired
     private WebApplicationContext context;
 
-    @Test
-    void realMppMatchesFixture() throws Exception {
-        assertMatches("real/mpp14baseline.mpp", "mpp14baseline.json");
-    }
+    @ParameterizedTest(name = "{1}")
+    @CsvSource({
+            "real/Xtask-dates-project2003-mpp8.mpp, mpp8.json",
+            "real/mpp9baseline.mpp,                 mpp9.json",
+            "real/mpp12baseline.mpp,                mpp12.json",
+            "real/mpp14baseline.mpp,                mpp14baseline.json",
+            "cyrillic_full.xml,                     cyrillic.json"
+    })
+    void outputMatchesFixture(String source, String fixture) throws Exception {
+        String actual = parse(source.trim());
+        Path path = FIXTURES.resolve(fixture.trim());
 
-    @Test
-    void cyrillicMatchesFixture() throws Exception {
-        assertMatches("cyrillic_full.xml", "cyrillic.json");
-    }
-
-    private void assertMatches(String source, String fixture) throws Exception {
-        String actual = parse(source);
-        Path path = FIXTURES.resolve(fixture);
-
-        if ("1".equals(System.getenv("UPDATE_FIXTURES")) || !Files.exists(path)) {
+        if ("1".equals(System.getenv("UPDATE_FIXTURES"))) {
             Files.createDirectories(FIXTURES);
             Files.writeString(path, actual, StandardCharsets.UTF_8);
             return;
         }
+
+        assertThat(path)
+                .as("fixture is missing — regenerate deliberately with UPDATE_FIXTURES=1")
+                .exists();
 
         assertThat(actual)
                 .as("output drifted from %s — review the change, then UPDATE_FIXTURES=1", path)

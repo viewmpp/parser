@@ -23,6 +23,12 @@ public class ParserExceptionHandler extends ResponseEntityExceptionHandler {
         return build(ex.error(), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler({LibraryFailureException.class})
+    public ResponseEntity<ExceptionDTO> handleLibraryFailure(LibraryFailureException ex) {
+        log.error("library failed while reading a file", ex);
+        return build(ParseError.CORRUPT_FILE, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler({BodyTooLargeException.class})
     public ResponseEntity<ExceptionDTO> handleBodyTooLarge(BodyTooLargeException ex) {
         log.info("body rejected: {}", ex.getMessage());
