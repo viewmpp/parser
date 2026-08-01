@@ -32,7 +32,8 @@ class FixtureTest {
             "real/mpp9baseline.mpp,                 mpp9.json",
             "real/mpp12baseline.mpp,                mpp12.json",
             "real/mpp14baseline.mpp,                mpp14baseline.json",
-            "cyrillic_full.xml,                     cyrillic.json"
+            "cyrillic_full.xml,                     cyrillic.json",
+            "mspdi.xml,                             mspdi.json"
     })
     void outputMatchesFixture(String source, String fixture) throws Exception {
         String actual = parse(source.trim());
