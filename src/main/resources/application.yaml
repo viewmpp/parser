@@ -7,3 +7,4 @@ server:
 
 parser:
   max-body-bytes: 52428800
+  max-concurrent: 4

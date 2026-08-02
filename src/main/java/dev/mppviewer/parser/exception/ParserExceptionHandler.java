@@ -35,6 +35,20 @@ public class ParserExceptionHandler extends ResponseEntityExceptionHandler {
         return build(ParseError.BODY_TOO_LARGE, HttpStatus.CONTENT_TOO_LARGE);
     }
 
+    @ExceptionHandler({LengthRequiredException.class})
+    public ResponseEntity<ExceptionDTO> handleLengthRequired(LengthRequiredException ex) {
+        log.info("request rejected: {}", ex.getMessage());
+        return build(ParseError.LENGTH_REQUIRED, HttpStatus.LENGTH_REQUIRED);
+    }
+
+    @ExceptionHandler({ParserBusyException.class})
+    public ResponseEntity<ExceptionDTO> handleParserBusy(ParserBusyException ex) {
+        log.warn("request rejected: {}", ex.getMessage());
+        return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE)
+                .header(HttpHeaders.RETRY_AFTER, "30")
+                .body(new ExceptionDTO(ParseError.PARSER_BUSY.code(), ParseError.PARSER_BUSY.message()));
+    }
+
     @ExceptionHandler({Exception.class})
     public ResponseEntity<ExceptionDTO> handleException(Exception ex) {
         log.error("unhandled exception", ex);
