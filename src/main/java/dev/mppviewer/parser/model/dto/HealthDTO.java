@@ -2,6 +2,8 @@ package dev.mppviewer.parser.model.dto;
 
 
 public record HealthDTO(
-        String status
+        String status,
+        String env,
+        String version
 ) {
 }

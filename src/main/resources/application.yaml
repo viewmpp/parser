@@ -6,5 +6,6 @@ server:
   port: 8080
 
 parser:
+  env: ${ENV:dev}
   max-body-bytes: 52428800
   max-concurrent: 4

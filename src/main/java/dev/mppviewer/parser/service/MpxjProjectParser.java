@@ -14,6 +14,7 @@ import dev.mppviewer.parser.model.dto.ProjectInfoDTO;
 import dev.mppviewer.parser.model.dto.RelationDTO;
 import dev.mppviewer.parser.model.dto.ResourceDTO;
 import dev.mppviewer.parser.model.dto.TaskDTO;
+import lombok.extern.slf4j.Slf4j;
 import org.jspecify.annotations.NonNull;
 import org.mpxj.DayType;
 import org.mpxj.Duration;
@@ -35,6 +36,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
+@Slf4j
 @Service
 public class MpxjProjectParser implements ProjectParser {
 
@@ -45,7 +47,7 @@ public class MpxjProjectParser implements ProjectParser {
         List<TaskDTO> tasks = new ArrayList<>();
         collectTasks(project.getChildTasks(), tasks);
 
-        return new ProjectDTO(
+        var projectDTO = new ProjectDTO(
                 Contract.VERSION,
                 projectInfo(project),
                 calendar(project),
@@ -53,6 +55,16 @@ public class MpxjProjectParser implements ProjectParser {
                 tasks,
                 relations(project)
         );
+
+        var projectName = projectDTO.project().name();
+
+        var calendar = projectDTO.calendar().name();
+
+        var taskCount = tasks.size();
+
+        log.info("parsing project: project_name={}, calendar={}, task_count={}", projectName, calendar, taskCount);
+
+        return projectDTO;
     }
 
     private ProjectFile read(byte[] source) {
@@ -67,6 +79,7 @@ public class MpxjProjectParser implements ProjectParser {
         if (project == null) {
             throw new InvalidProjectFileException(ParseError.UNSUPPORTED_FORMAT, "reader returned null", null);
         }
+
         return project;
     }
 
