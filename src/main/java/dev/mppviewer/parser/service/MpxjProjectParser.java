@@ -56,13 +56,9 @@ public class MpxjProjectParser implements ProjectParser {
                 relations(project)
         );
 
-        var projectName = projectDTO.project().name();
-
-        var calendar = projectDTO.calendar().name();
-
         var taskCount = tasks.size();
 
-        log.info("parsing project: project_name={}, calendar={}, task_count={}", projectName, calendar, taskCount);
+        log.info("parsing project: task_count={}", taskCount);
 
         return projectDTO;
     }
