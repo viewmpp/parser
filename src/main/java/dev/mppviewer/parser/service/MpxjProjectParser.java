@@ -44,8 +44,9 @@ public class MpxjProjectParser implements ProjectParser {
     public ProjectDTO parse(byte[] source) {
         ProjectFile project = read(source);
 
-        List<TaskDTO> tasks = new ArrayList<>();
-        collectTasks(project.getChildTasks(), tasks);
+        List<TaskDTO> collected = new ArrayList<>();
+        collectTasks(project.getChildTasks(), collected);
+        List<TaskDTO> tasks = OutlineNumbers.repairIfRepeated(collected);
 
         var projectDTO = new ProjectDTO(
                 Contract.VERSION,

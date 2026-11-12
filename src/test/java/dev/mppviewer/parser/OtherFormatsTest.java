@@ -9,12 +9,18 @@ import dev.mppviewer.parser.service.ProjectParser;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.mpxj.ProjectFile;
+import org.mpxj.Task;
+import org.mpxj.reader.UniversalProjectReader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -84,6 +90,49 @@ class OtherFormatsTest {
         assertThat(dto.relations()).isNotEmpty();
         assertThat(dto.resources()).isNotEmpty();
         assertThat(dto.tasks()).anyMatch(t -> !t.assignments().isEmpty());
+    }
+
+    @Test
+    void ganttProjectGetsOutlineNumbersFromItsHierarchy() throws IOException {
+        ProjectDTO dto = parser.parse(Files.readAllBytes(FORMATS.resolve("HouseBuildingSample.gan")));
+
+        List<String> numbers = dto.tasks().stream().map(TaskDTO::outlineNumber).toList();
+
+        assertThat(numbers.subList(0, 9)).containsExactly("1", "1.1", "1.2", "1.3", "2", "2.1", "2.2", "2.3", "3");
+        assertThat(numbers).doesNotHaveDuplicates();
+        assertThat(dto.tasks())
+                .as("MPXJ copies the same per-level index into the WBS, which numbers nothing")
+                .allMatch(t -> t.wbs() == null);
+    }
+
+    static Stream<Path> keepTheirOwnNumbers() throws IOException {
+        Stream<Path> formats = readable().filter(p -> !p.getFileName().toString().endsWith(".gan"));
+        try (var real = Files.list(Path.of("testdata", "real"))) {
+            return Stream.concat(formats, real.filter(p -> p.toString().endsWith(".mpp")).sorted().toList().stream());
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("keepTheirOwnNumbers")
+    void aFileWhoseNumbersDoNotRepeatKeepsThem(Path file) throws Exception {
+        ProjectDTO dto = parser.parse(Files.readAllBytes(file));
+        ProjectFile project = new UniversalProjectReader().read(file.toFile());
+
+        Map<Integer, String> outline = new HashMap<>();
+        Map<Integer, String> wbs = new HashMap<>();
+        for (Task task : project.getTasks()) {
+            outline.put(task.getUniqueID(), blankToNull(task.getOutlineNumber()));
+            wbs.put(task.getUniqueID(), blankToNull(task.getWBS()));
+        }
+
+        for (TaskDTO task : dto.tasks()) {
+            assertThat(task.outlineNumber()).as("outline number of task %s", task.id()).isEqualTo(outline.get(task.id()));
+            assertThat(task.wbs()).as("WBS of task %s", task.id()).isEqualTo(wbs.get(task.id()));
+        }
+    }
+
+    private static String blankToNull(String value) {
+        return value == null || value.isEmpty() ? null : value;
     }
 
     @Test
