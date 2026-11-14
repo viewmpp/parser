@@ -170,7 +170,8 @@ public class MpxjProjectParser implements ProjectParser {
         return new ProjectInfoDTO(
                 emptyToNull(project.getProjectProperties().getName()),
                 project.getProjectProperties().getStartDate(),
-                project.getProjectProperties().getFinishDate()
+                project.getProjectProperties().getFinishDate(),
+                project.getProjectProperties().getStatusDate()
         );
     }
 

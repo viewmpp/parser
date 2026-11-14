@@ -6,6 +6,7 @@ import java.time.LocalDateTime;
 public record ProjectInfoDTO(
         String name,
         LocalDateTime start,
-        LocalDateTime finish
+        LocalDateTime finish,
+        LocalDateTime statusDate
 ) {
 }

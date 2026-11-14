@@ -49,6 +49,19 @@ class ContractShapeTest {
     }
 
     @Test
+    void projectFieldsMatchContract() throws Exception {
+        assertThat(names(parse("real/mpp14baseline.mpp").get("project")))
+                .containsExactlyInAnyOrder("name", "start", "finish", "status_date");
+    }
+
+    @Test
+    void anXerCarriesItsDataDateAsTheStatusDate() throws Exception {
+        JsonNode project = parse("formats/percent-complete-8.4.xer").get("project");
+
+        assertThat(project.get("status_date").stringValue()).isEqualTo("2015-02-24T00:00:00");
+    }
+
+    @Test
     void taskFieldsMatchContract() throws Exception {
         assertThat(names(parse("real/mpp14baseline.mpp").get("tasks").get(0)))
                 .containsExactlyInAnyOrder(
